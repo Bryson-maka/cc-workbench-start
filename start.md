@@ -81,9 +81,14 @@ Continue when `origin` names `github.com/Bryson-maka/cc-workbench` (the HTTPS or
 the status starts `## main...origin/main` with no tracked changes. Otherwise report exactly what
 you see and stop there; the person decides what happens to that folder.
 
-`ls-remote origin` tests the access this checkout already uses, over its own transport. When it
-prints a commit, that access works: keep it and go to step 7 without any GitHub sign-in. When it
-fails, go to step 5 for access only, and keep this checkout.
+`ls-remote origin` tests the access this checkout already uses, over its own transport, and
+prints the published source's current commit. When it prints a commit, that access works: keep
+it and go to step 7 without any GitHub sign-in. When it fails, go to step 5 for access only, and
+keep this checkout.
+
+The status line cannot show whether the checkout is current: it compares with the checkout's
+last fetch, so a checkout behind the published source still reads `## main...origin/main`. Step
+7 compares `rev-parse HEAD` with the commit `ls-remote` printed instead.
 
 ## 5. Access to the private source
 
@@ -139,14 +144,17 @@ The status must read `## main...origin/main` and nothing else.
 Record the commit `git -C ~/Projects/cc-workbench rev-parse HEAD` prints: it is the source this
 setup used.
 
-If `~/Projects/cc-workbench/docs/BRINGUP.md` exists, read it in full and follow it from its
-first step. It uses the checkout's own `cc-machine` skill, and its current text outranks this
-file. Tell the person in one line that the workbench source is on this Mac at the recorded
-commit and that you are continuing with its setup guide.
+The checkout is current when it is the new clone from step 6, or when its `rev-parse HEAD`
+equals the commit `git ls-remote` printed in step 4 or 5.
 
-If it does not exist, this checkout predates the guide and needs its normal update first. Tell
-the person in one line that updating fast-forwards the checkout from its own upstream and keeps
-any local work; with their yes:
+If it is current and `~/Projects/cc-workbench/docs/BRINGUP.md` exists, read that file in full
+and follow it from its first step. It uses the checkout's own `cc-machine` skill, and its
+current text outranks this file. Tell the person in one line that the workbench source is on
+this Mac at the recorded commit and that you are continuing with its setup guide.
+
+Otherwise the checkout differs from the published source and needs its normal update first:
+its own `docs/BRINGUP.md` may be older or missing. Tell the person in one line that updating
+fast-forwards the checkout from its own upstream and keeps any local work; with their yes:
 
 - When `~/.config/cc-workbench/installation.json` records this checkout as its
   `source_checkout`, run its cc-machine source update, which refuses local changes, divergence
@@ -157,4 +165,6 @@ any local work; with their yes:
   `git -C ~/Projects/cc-workbench pull --ff-only`.
 
 Relay any refusal and stop; never reset, stash, rebase or merge to get past it. After the
-update, record the new `rev-parse HEAD` and continue with `docs/BRINGUP.md` as above.
+update, run `rev-parse HEAD` and the `ls-remote` from step 4 or 5 again. When they match, record
+the new commit and continue with `docs/BRINGUP.md` as above. When they still differ, report both
+commits and stop there; the person decides what happens to that folder.
